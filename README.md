@@ -1,4 +1,30 @@
-# Kitchenware Competition Starter
+# Kitchenware Competition Image classification
+
+Starter notebook [keras-starter.ipynb](./keras-starter.ipynb) from [this GitHub repo](https://github.com/DataTalksClub/kitchenware-competition-starter) by Alexey Grigorev.
+
+- Using the starter notebook to learn how to load the competition data and make submissions, this repo explores other, larger and more powerful deep learning models to solve this problem.
+- CNN models include:
+    - ConvNext
+    - ConvNextV2
+    - EfficientNet
+- Image transformer models include:
+    - MaxViT
+    - DaViT
+    - BAiT
+    - CAiT
+
+Models not from Keras applications come from [this](https://github.com/leondgarse/keras_cv_attention_models/tree/main/keras_cv_attention_models/beit) attention model GitHub repo by leondgarse.
+- Information on original papers also found here.
+
+## Files
+
+- [keras-starter-deit-cait.ipynb](./keras-starter-deit-cait.ipynb): explores the DEiT and CAiT transformer models
+- [keras-starter-efficientnet.ipynb](./keras-starter-efficientnet.ipynb): explores EfficientNet CNN models
+- [keras-starter-maxvit.ipynb](./keras-starter-maxvit.ipynb): explores the MaxViT transformer model
+- [keras-starter-swin.ipynb](./keras-starter-swin.ipynb): explores the Swin Transformer model
+- [model-testing.ipynb](./model-testing.ipynb): performs a search over some transformer and CNN models
+
+## Original README
 
 A starter notebook for [the Kitchenware classification competition](https://www.kaggle.com/competitions/kitchenware-classification/) on Kaggle: [keras-starter.ipynb](keras-starter.ipynb)
 
