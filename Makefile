@@ -1,19 +1,23 @@
 MODEL_NAME=kitchenware-classification
+TAG=latest
 
 train:
 	pipenv run python trainer.py
 
-build: 
+build: train
 	pipenv run bentoml build
-	sudo pipenv run bentoml containerize ${MODEL_NAME}:latest
+	pipenv run bentoml containerize ${MODEL_NAME}:${TAG} -t ${MODEL_NAME}:${TAG}
 
-test: local_deploy
+test:
 	pipenv run python ./testing/tester.py ./testing/0966.jpg
 
-local_deploy:
+serve: build
+	pipenv run bentoml serve service.py:svc 
 
+run: build
+	docker run -it --rm -p 3000:3000 ${MODEL_NAME}:${TAG}
 
-publish: build integration_test
+publish: build
 	LOCAL_IMAGE_NAME=${LOCAL_IMAGE_NAME} bash scripts/publish.sh
 
 setup:

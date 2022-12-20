@@ -5,6 +5,8 @@
 # 
 # Using the DEiT small model here (DEiT Small Distilled Patch 16, Image size 244 x 244) in the interest of time and space for deployment
 
+import bentoml
+
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -164,6 +166,10 @@ predicted_class = classes[np.argmax(predictions, axis=1)[0]]
 predicted_class
 
 
-import bentoml
-bentoml.tensorflow.save_model("kitchenware-classification", model)
+bentoml_model = bentoml.keras.save_model(
+    "kitchenware-classification", 
+    model,
+    signatures={"__call__": {"batchable": True, "batch_dim": 0}}
+)
 
+print(bentoml_model.path)

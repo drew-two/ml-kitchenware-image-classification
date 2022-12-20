@@ -1,0 +1,8 @@
+{
+    "model": "kitchenware-classifier",
+    "version": 1.0,
+    "prediction": {
+        "image": "",
+        "prediction_id": 966
+    }
+}

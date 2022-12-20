@@ -20,7 +20,7 @@ request = {
     "prediction": {
         "image": encoded_image,
         "prediction_id": image_id
-    },
+    }
 }
 
 

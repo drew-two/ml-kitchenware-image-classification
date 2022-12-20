@@ -16,6 +16,8 @@ Starter notebook [keras-starter.ipynb](./keras-starter.ipynb) from [this GitHub 
 Models not from Keras applications come from [this](https://github.com/leondgarse/keras_cv_attention_models/tree/main/keras_cv_attention_models/beit) attention model GitHub repo by leondgarse.
 - Information on original papers also found here.
 
+EVALUATION: See [Project-Evaluation.md](./Project-Evaluation.md)
+
 ## Dataset
 
 Dataset comes from [Kitchenware Classification Kaggle competition](https://www.kaggle.com/competitions/kitchenware-classification).
@@ -42,9 +44,28 @@ Dataset comes from [Kitchenware Classification Kaggle competition](https://www.k
 
 ## Use
 
-Can see EDA in [this notebook](./notebooks/eda.ipynb).
+Refer to [Makefile](./Makefile)
+- Run with `make run`
+    - This performs all the training and building for you.
+- Otherwise:
+    - Train with `make train`
+    - Build with `make build`
+    - Run docker container locally with `make run`
+        - Alternatively, run `make serve` to run without Docker
+4. Test with by opening http://localhost:3000/
+    - Select the first option, to POST
+    - Hit `Try it out` in the top right
+    - In the drop down box, change `application/postscript` to `image/jpeg`
+    - Upload the file `testing/0966.jpg` or any other file from the dataset.
+    - Hit `Execute`, wait for your result
 
+## Cloud Deploy
 
+NOTE: As a Tensorflow image classification model, this is pretty large (~2.5GB image) and uses a decent amount of resources (~4GB memory).
+- I can provide as URL for testing, just message me on the Slack (Andrew Katoch)
+- Otherwise, the screenshots should be sufficient.
+
+Deploy to cloud with `make publish`
 
 ## Notebooks
 
