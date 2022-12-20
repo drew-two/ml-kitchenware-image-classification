@@ -1,0 +1,14 @@
+bentoml
+hvplot
+imageio
+imgaug
+jupyter
+kaggle
+keras-cv-attention-models
+keras-tuner
+mlflow
+pandas
+Pillow
+pydantic
+tensorflow-gpu==2.11.0
+tensorflow-hub

@@ -1,0 +1,11 @@
+service: "service.py:svc"
+labels:
+  owner: andrew-katoch
+include:
+- "*.py"
+python:
+  packages:
+    - pydantic
+    - pandas
+    - tensorflow
+    - pillow

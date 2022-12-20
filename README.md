@@ -16,13 +16,54 @@ Starter notebook [keras-starter.ipynb](./keras-starter.ipynb) from [this GitHub 
 Models not from Keras applications come from [this](https://github.com/leondgarse/keras_cv_attention_models/tree/main/keras_cv_attention_models/beit) attention model GitHub repo by leondgarse.
 - Information on original papers also found here.
 
-## Files
+## Dataset
 
-- [keras-starter-deit-cait.ipynb](./keras-starter-deit-cait.ipynb): explores the DEiT and CAiT transformer models
-- [keras-starter-efficientnet.ipynb](./keras-starter-efficientnet.ipynb): explores EfficientNet CNN models
-- [keras-starter-maxvit.ipynb](./keras-starter-maxvit.ipynb): explores the MaxViT transformer model
-- [keras-starter-swin.ipynb](./keras-starter-swin.ipynb): explores the Swin Transformer model
-- [model-testing.ipynb](./model-testing.ipynb): performs a search over some transformer and CNN models
+Dataset comes from [Kitchenware Classification Kaggle competition](https://www.kaggle.com/competitions/kitchenware-classification).
+- Can download dataset directly or after installing [Kaggle API](https://www.kaggle.com/docs/api)
+    - You can run the commands at the beginning of the [starter notebook](./notebooks/keras-starter.ipynb), or: 
+        ```
+        kaggle competitions download -c kitchenware-classification
+        mkdir data
+        unzip kitchenware-classification.zip -d data > /dev/null
+        rm kitchenware-classification.zip
+        ```
+
+## Setup
+
+0. (Optional) GPU support:
+    - Get appropriate CUDA v11.x.x from [Nvidia](https://developer.nvidia.com/cuda-11.2.2-download-archive).
+        - (Linux) Add to your .bashrc: `echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64/' >> ~/.bashrc`  
+    - Install [cuDNN 8.1.0](https://docs.nvidia.com/deeplearning/cudnn/install-guide/index.html)
+    - NOTE: Need to install it this way rather than via Anaconda to work with Pipenv out of the box
+1. Install pipenv and pyenv (recommended):
+    - `pip install pipenv pyenv`
+    - `make setup`
+    - By default this installs the development packages. You can run `pipenv install` for just the deploy packages.
+
+## Use
+
+Can see EDA in [this notebook](./notebooks/eda.ipynb).
+
+
+
+## Notebooks
+
+0. EDA
+- [eda.ipynb](./notebooks/eda.ipynb)
+1. Model experimentation
+- [keras-starter-deit-cait.ipynb](./notebooks/keras-starter-deit-cait.ipynb): explores the DEiT and CAiT transformer models
+- [keras-starter-efficientnet.ipynb](./notebooks/keras-starter-efficientnet.ipynb): explores EfficientNet CNN models
+- [keras-starter-maxvit.ipynb](./notebooks/keras-starter-maxvit.ipynb): explores the MaxViT transformer model
+- [keras-starter-swin.ipynb](./notebooks/keras-starter-swin.ipynb): explores the Swin Transformer model
+- [model-testing.ipynb](./notebooks/model-testing.ipynb): performs a search over some transformer and CNN models
+2. Hyperparameter Search
+- [augmentation-test.ipynb](./notebooks/augmentation-test.ipynb): explores augmentation from ImageDataGenerator. None chosen
+- [randaug-testing.ipynb](./notebooks/randaug-testing.ipynb): explores augmentation using the RandAugment auto augmentation policy. Not chosen
+- [learning-rate-test.ipynb)](./notebooks/learning-rate-test.ipynb): searches for learning rate with large search space
+- [learning-rate-final.ipynb)](./notebooks/learning-rate-final.ipynb): searches for learning rate with narrower search space
+3. Final Drafts
+- [kaggle-submission.ipynb](./notebooks/kaggle-submission.ipynb): submits trained BEiT model for Kaggle competition
+- [trainer.ipynb](./trainer.ipynb): training and bentoml capture of model for deployment (uses DEiT to save on space/time)
 
 ## Original README
 

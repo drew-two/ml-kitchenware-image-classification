@@ -1,0 +1,33 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+bentoml = "*"
+numpy = "*"
+pandas = "*"
+pillow = "*"
+keras-cv-attention-models = "*"
+pydantic = "*"
+tensorflow = "*"
+tensorflow-hub = "*"
+deepdiff = "*"
+
+[dev-packages]
+tensorflow-datasets = "==4.7.0"
+tensorflow-hub = "*"
+imageio = "==2.22.4"
+imgaug = "==0.4.0"
+jupyter = "*"
+kaggle = "*"
+keras-cv-attention-models = "*"
+matplotlib = "*"
+keras-tuner = "*"
+mlflow = "*"
+hvplot = "*"
+ipython = "*"
+ipykernel = "*"
+
+[requires]
+python_version = "3.9"
