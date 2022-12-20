@@ -9,7 +9,7 @@ build: train
 	pipenv run bentoml containerize ${MODEL_NAME}:${TAG} -t ${MODEL_NAME}:${TAG}
 
 test:
-	pipenv run python ./testing/tester.py ./testing/0966.jpg
+	pipenv run python ./testing/test_prediction.py ./testing/0966.jpg "http://localhost:3000/predict_image"
 
 serve: build
 	pipenv run bentoml serve service.py:svc 

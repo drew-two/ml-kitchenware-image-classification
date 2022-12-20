@@ -45,19 +45,18 @@ Dataset comes from [Kitchenware Classification Kaggle competition](https://www.k
 ## Use
 
 Refer to [Makefile](./Makefile)
-- Run with `make run`
-    - This performs all the training and building for you.
-- Otherwise:
-    - Train with `make train`
-    - Build with `make build`
-    - Run docker container locally with `make run`
-        - Alternatively, run `make serve` to run without Docker
-4. Test with by opening http://localhost:3000/
-    - Select the first option, to POST
-    - Hit `Try it out` in the top right
-    - In the drop down box, change `application/postscript` to `image/jpeg`
-    - Upload the file `testing/0966.jpg` or any other file from the dataset.
-    - Hit `Execute`, wait for your result
+1. Run with `make run`
+    - This performs all the training and building for you. You can see the Makefile to run these separately.
+2. Testing:
+    - Test from script:
+        - Evaluate with the image in `testing/` with `make test`
+    - Test by GUI:
+        - Open http://localhost:3000/
+        - Select the first option, to POST
+        - Hit `Try it out` in the top right
+        - In the drop down box, change `application/postscript` to `image/jpeg`
+        - Upload the file `testing/0966.jpg` or any other file from the dataset.
+        - Hit `Execute`, wait for your result
 
 ## Cloud Deploy
 

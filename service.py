@@ -27,7 +27,7 @@ model_runner = model_ref.to_runner()
 svc = bentoml.Service("kitchenware-classification", runners=[model_runner])
 
 def base64_decode_image(encoded_image):
-    decoded_bytes = base64.b64decode(encoded_image).astype("float32")
+    decoded_bytes = base64.b64decode(encoded_image)
     image = Image.open(BytesIO(decoded_bytes))
     image = image.resize((IMAGE_SIZE, IMAGE_SIZE))
     return image
@@ -40,14 +40,14 @@ def preprocess_image(image):
 @svc.api(input=Image(), output=JSON())
 async def predict_image(f: PILImage) -> "JSON":
     assert isinstance(f, PILImage)
-    image = np.array(f.resize((IMAGE_SIZE, IMAGE_SIZE)))
+    image = np.array(f.resize((IMAGE_SIZE, IMAGE_SIZE))).astype("float32")
     image = preprocess_image(image)
 
     input_arr = np.expand_dims(image, 0)  # reshape to [1, 224, 224, 3]
     prediction = await model_runner.async_run(input_arr)
     predicted_class = classes[np.argmax(prediction, axis=1)[0]]
 
-    return {
+    response = {
             'model': 'kitchenware-classifier',
             'version': 1.0,
             'prediction': {
@@ -55,3 +55,7 @@ async def predict_image(f: PILImage) -> "JSON":
                 'prediction_id': 966
             },
         }
+
+    print(response)
+
+    return response
