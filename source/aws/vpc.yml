@@ -42,7 +42,7 @@ Resources:
         - Key: 'Name'
           Value: !Sub '${ProjectName}-subnet-2'
 
-  IGW:
+  InternetGateway:
     Type: 'AWS::EC2::InternetGateway'
     Properties:
       Tags:

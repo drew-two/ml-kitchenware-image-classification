@@ -44,34 +44,59 @@ repo:
 	aws ecr create-repository --repository-name ${AWS_ECR_REPO}
 
 publish:
+	@echo
 	docker tag ${MODEL_NAME}:${TAG} ${AWS_USER_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${AWS_ECR_REPO}:${TAG}
 	docker push ${AWS_USER_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${AWS_ECR_REPO}:${TAG}
 
-aws: repo publish 
-	# Create stack for VPC/Subnet/Networking
+aws: #repo publish
+	@ echo 
+	@ echo Deploying stack for VPC/Subnet/Networking...
 	aws cloudformation create-stack \
-		--template-body file://$(pwd)/source/aws/vpc.yml \
+		--template-body file://$(shell pwd)/source/aws/vpc.yml \
 		--parameters ParameterKey=ProjectName,ParameterValue="${MODEL_NAME}" \
-		--stack-name ${MODEL_NAME}-vpc #\
-		# | jq r '.StackID'
-	# Stack for ECS Cluster
+		--stack-name ${MODEL_NAME}-vpc
+	@echo Waiting for VPC stack to complete...
+	aws cloudformation wait stack-create-complete --stack-name ${MODEL_NAME}-vpc
+	@echo
+	@echo Deploying stack for ECS Cluster...
 	aws cloudformation create-stack \
-		--template-body file://$(pwd)/source/aws/ecs-cluster.yml \
+		--template-body file://$(shell pwd)/source/aws/ecs-cluster.yml \
 		--parameters ParameterKey=ProjectName,ParameterValue="${MODEL_NAME}" \
 		--capabilities CAPABILITY_NAMED_IAM \
 		--stack-name ${AWS_CLUSTER_NAME}
-	# Stack to deploy app to ECS cluster
+	@echo Waiting for ECS Cluster stack to complete...
+	aws cloudformation wait stack-create-complete --stack-name ${AWS_CLUSTER_NAME}
+	@echo
+	@echo Deploying stack for task definition to ECS cluster
 	aws cloudformation create-stack \
-		--template-body file://$(pwd)/source/aws/app.yml \
+		--template-body file://$(shell pwd)/source/aws/app.yml \
 		--parameters ParameterKey=ProjectName,ParameterValue="${MODEL_NAME}" \
 			ParameterKey=UserId,ParameterValue="${AWS_USER_ID}" \
-		--stack-name ${MODEL_NAME}-task-definition
+		--stack-name ${MODEL_NAME}-ecs-task-definition
+	@echo Waiting for ECS Task Definition stack to complete...
+	aws cloudformation wait stack-create-complete --stack-name ${MODEL_NAME}-ecs-task-definition
+	@echo Deploy complete.
 
 down:
-	aws cloudformation delete-stack --stack-name ${MODEL_NAME}-task-definition
-	aws cloudformation delete-stack --stack-name ${AWS_CLUSTER_NAME}
-	aws cloudformation delete-stack --stack-name ${MODEL_NAME}-vpc
+	@echo
+	@echo "Deleting ECS Task Definition."
+	aws cloudformation delete-stack --stack-name ${MODEL_NAME}-ecs-task-definition
+	@echo "Waiting for delete confirmation..."
+	@echo "Deleted."
 
+	aws cloudformation wait stack-delete-complete --stack-name ${MODEL_NAME}-ecs-task-definition
+	@echo "Deleting ECS Cluster."
+	aws cloudformation delete-stack --stack-name ${AWS_CLUSTER_NAME}
+	@echo "Waiting for delete confirmation..."
+	@echo "Deleted."
+
+	aws cloudformation wait stack-delete-complete --stack-name ${AWS_CLUSTER_NAME}
+	@echo "Deleting VPC created for ECS cluster..."
+	aws cloudformation delete-stack --stack-name ${MODEL_NAME}-vpc
+	@echo "Waiting for delete confirmation..."
+	aws cloudformation wait stack-delete-complete --stack-name ${MODEL_NAME}-vpc
+	echo "All deploys deleted"
+	
 ## Setup and cleanup
 clean:
 	rm ./*.h5
