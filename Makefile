@@ -15,7 +15,7 @@ dataset:
 train:
 	pipenv run python ./source/trainer.py
 
-build: train
+build:
 	cd ./source/; \
 	pipenv run bentoml build; \
 	pipenv run bentoml containerize ${MODEL_NAME}:${TAG} -t ${MODEL_NAME}:${TAG};
@@ -23,7 +23,7 @@ build: train
 serve: build
 	pipenv run bentoml serve service.py:svc 
 
-run: build
+run: train build
 	docker run -it --rm -p 3000:3000 ${MODEL_NAME}:${TAG}
 
 test:
@@ -40,11 +40,11 @@ repo:
 			${AWS_USER_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
 	aws ecr create-repository --repository-name ${AWS_ECR_REPO}
 
-publish: repo
+publish:
 	docker tag ${MODEL_NAME}:${TAG} ${AWS_USER_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${AWS_ECR_REPO}:${TAG}
 	docker push ${AWS_USER_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${AWS_ECR_REPO}:${TAG}
 
-aws: repo publish
+aws: 
 	# Create stack for VPC/Subnet/Networking
 	aws cloudformation create-stack \
 		--template-body file://$(pwd)/source/aws/vpc.yml \
@@ -63,6 +63,14 @@ aws: repo publish
 		--parameters ParameterKey=ProjectName,ParameterValue="${MODEL_NAME}" \
 			ParameterKey=UserId,ParameterValue="${AWS_USER_ID}" \
 		--stack-name ${MODEL_NAME}-app
+
+up: repo publish aws
+	aws ecs register-task-definition --family
+
+down:
+	aws cloudformation delete-stack --stack-name ${MODEL_NAME}-app
+	aws cloudformation delete-stack --stack-name ${AWS_CLUSTER_NAME}
+	aws cloudformation delete-stack --stack-name ${MODEL_NAME}-vpc
 
 ## Setup and cleanup
 cleanup:
