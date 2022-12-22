@@ -29,6 +29,7 @@ Resources:
                 - 'ecr:BatchGetImage'
                 - 'ecr:GetAuthorizationToken'
                 - 'ecr:GetDownloadUrlForLayer'
+                - 'ecs:StartTask'
                 - 'logs:CreateLogStream'
                 - 'logs:PutLogEvents'
               Resource: '*'

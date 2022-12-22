@@ -46,10 +46,6 @@ Resources:
       TaskDefinition: !Ref ECSTaskDefinition
       Cluster: !ImportValue 'ECSCluster'
       LaunchType: FARGATE
-      # DeploymentConfiguration:
-      #   DeploymentCircuitBreaker:
-      #     Enable: Yes
-      #     Rollback: Yes
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: ENABLED
@@ -92,19 +88,3 @@ Resources:
       Actions:
         - TargetGroupArn: !Ref LoadBalancerTargetGroup
           Type: forward
-
-
-Outputs:
-
-  URL:
-    Description: Kitchenware Classification URL
-    Value: !Join ['', ['http://', !ImportValue ELBDNSName, '/']]
-    Export:
-      Name: !Sub '${ProjectName}-URL'
-
-  ApiEndpoint:
-    Description: Kitchenware Classification API Endpoint
-    Value: !Join ['', ['http://', !ImportValue ELBDNSName, '/predict_image']]
-    Export:
-      Name: !Sub '${ProjectName}-API-Endpoint'
-

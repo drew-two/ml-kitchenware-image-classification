@@ -3,13 +3,15 @@
 This repo explores simple CNNs from Keras applications, as well as larger and more powerful deep learning models such as image transformers to classify kitchenware and cutlery. Here we see exploratory data analysis (EDA), tuning different ML models, and hyperparameter search with Keras Tuner.
 - Model is submitted to Kaggle as well as having a local and cloud deploy via [BentoML](https://www.bentoml.com/)
 
-### Dataset
+## Dataset
 
 Dataset comes from [Kitchenware Classification Kaggle competition](https://www.kaggle.com/competitions/kitchenware-classification)
 
 Includes of glasses, cups, plates, forks, knives and spoons.
 
-### Technologies
+If [Kaggle CLI](https://www.kaggle.com/docs/api) is configured, download and unzip with `make dataset`
+
+## Technologies
 - Python
 - Anaconda
 - Pipenv
@@ -31,6 +33,9 @@ Includes of glasses, cups, plates, forks, knives and spoons.
 - AWS ECR
 - AWS ECS
 
+\* Final model used
+\** Used for Kaggle submission
+
 Starter notebook [keras-starter.ipynb](./source/notebooks/keras-starter.ipynb) from this [GitHub repo](https://github.com/DataTalksClub/kitchenware-competition-starter) for DataTalks.Club [ML Zoomcamp](https://github.com/alexeygrigorev/mlbookcamp-code).
 
 ## Development Overview:
@@ -48,17 +53,18 @@ Starter notebook [keras-starter.ipynb](./source/notebooks/keras-starter.ipynb) f
 
 ## Setup
 
-See [Setup instructions](./SETUP.md)
+See [Setup instructions](./SETUP.md). Install Git LFS if pulling repo to avoid retraining model.
 
 ## Use
 
-Refer to [Makefile](./Makefile). Everything you need to run will be in there
-1. Run with `make run`
-    - This performs all the training and building for you. You can see the Makefile to run these separately.
-2. Testing:
+Refer to [Makefile](./Makefile).
+0. (Optional) run `make train` to train model. **Will take very long time if GPU is not configured.**
+1. Run `make run` to build BentoML Bento (Docker image and webserver/API) for model and run locally.
+    - Can also run `make serve` to serve model from Python
+2. After running Bento:
     - Test from script:
         - Evaluate with the image in `testing/` with `make test`
-    - Test by GUI:
+    - Test from web browser:
         - Open http://localhost:3000/
         - Select the first option, to POST
         - Hit `Try it out` in the top right
@@ -66,19 +72,57 @@ Refer to [Makefile](./Makefile). Everything you need to run will be in there
         - Upload the file `testing/0966.jpg` or any other file from the dataset.
         - Hit `Execute`, wait for your result
 
+Run `make clean` to delete anything generated (including model searches and Bentos)
+
 ## Cloud Deploy
 
-NOTE: As a Tensorflow image classification model, this is pretty large (~2.5GB image) and uses a decent amount of resources (~4GB memory).
-- I can provide as URL for testing, just message me on the Slack (Andrew Katoch)
-- Otherwise, the screenshots should be sufficient.
+See [Walkthrough](./WALKTHROUGH.md) to see screenshots and step-by-step.
 
-0. Install [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html) and configure it.
-1. Push image to cloud with `make publish`. This creates an AWS ECR repo and pushes to it
-2. Install [ecs-cli](https://github.com/aws/amazon-ecs-cli#installing) with `make install-ecs-cli`.
-3. Configure the ECS-cli profile with the same credentials as the AWS CLI: `./ecs-cli configure profile --access-key aws_access_key_id --secret-key aws_secret_access_key`
-4. 
+**Note**: As a Tensorflow image classification model, this is fairly large (~2.5GB image) and uses a decent amount of resources (~4GB memory).
 
-## Notebooks
+Must be done after building Bento. This pulls from your AWS **default** profile. Can adjust settings in [Makefile](./Makefile).
+
+Run `make aws` to make ECR repo, push BentoML Docker image, and create ECS cluster and service with cloudformation.
+- Steps this takes:
+    1. Creates AWS ECR repo in your local AWS region (`make repo`)
+    2. Publishes docker image to ECR repo by tagging local Bento image and pushing
+    3. Deploys 3 AWS Cloudformation stacks:
+        - Creates VPC and networking
+        - Creates ECS Cluster and service
+        - Creates ECS task definition to be run
+- Unfortunately, we have to run the ECS task to start up the ML service, as this not yet possible from Cloudformation.
+    1. Navigate to the [AWS console](https://aws.amazon.com/)
+    2. Navigate to AWS ECS from the top bar.
+    3. Click on Amazon ECS > **Task Definitions** on the left navigation bar.
+    4. Should see Task Definition like 'kitchenware-classification-app-ECSTaskDefinition'. Click on it.
+    5. There should only be one Task Definition revision. Click on it or the latest.
+    6. Click Actions > **Run Task** from the drop down menu. Make the following selections:
+        - `Launch type: FARGATE`
+        - `Operating system family: Linux`
+        - `Platform version: LATEST`
+        - `Number of tasks: 1`
+        - `Cluster VPC`: choose the one created by `make aws`
+            - On the Cloudformation console, the stack 'kitchenware-classification-vpc' should show the VPC Id in Outputs.
+        - `Subnets`: pick either.
+        - `Security groups`: Click 'Edit' and add an inbound rule.
+            - Specify rule type custom TCP and port 3000
+        - `Auto-assign public IP: ENABLED`
+    7. Hit button `Run Task`
+    8. Click on the newly created task, note the Public IP, and wait for Container Status to become `RUNNING`
+    9. Test model by:
+        - Test from script with the Public IP:
+            - `pipenv run python ./source/test/test_prediction.py ./source/test/0966.jpg "http://<public-ip>:3000`
+        - Test by web browser:
+            - Open http://<public-ip>:3000/
+            - Select the first option, to POST
+            - Hit `Try it out` in the top right
+            - In the drop down box, change `application/postscript` to `image/jpeg`
+            - Upload the file `testing/0966.jpg` or any other file from the dataset.
+            - Hit `Execute`, wait for your result
+    10. Hit `Stop` in the top right to bring down model. 
+- To delete all AWS deploys, run `aws down`.
+
+## Code
 
 0. EDA
     - [eda.ipynb](./notebooks/eda.ipynb)
@@ -100,41 +144,3 @@ NOTE: As a Tensorflow image classification model, this is pretty large (~2.5GB i
 4. Deploy
     - [service.py](./service.py): BentoML service used for Docker/ECS
     - [test_prediction.py](./testing/test_prediction.py): Script for testing service 
-
-## Original README
-
-A starter notebook for [the Kitchenware classification competition](https://www.kaggle.com/competitions/kitchenware-classification/) on Kaggle: [keras-starter.ipynb](keras-starter.ipynb)
-
-In this notebook, we show how to:
-
-
-- Download the data from Kaggle and unzip it
-- Read the data
-- Train an xception model (using the same code as in [ML Zoomcamp](http://mlzoomcamp.com))
-- Make predictions
-- Submit the results 
-
-You can run this notebook in SaturnCloud:
-
-<p align="center">
-    <a href="https://app.community.saturnenterprise.io/dash/resources?recipeUrl=https://raw.githubusercontent.com/DataTalksClub/kitchenware-competition-starter/main/kitchenware-jupyter-recipe.json" target="_blank" rel="noopener">
-        <img src="https://saturncloud.io/images/embed/run-in-saturn-cloud.svg" alt="Run in Saturn Cloud"/>
-    </a>
-</p>
-
-
-Using the recipe:
-
-- Download the credential file from Kaggle
-- Put the content of the file to [SaturnCloud secrets](https://app.community.saturnenterprise.io/dash/o/community/secrets), save this secret as "kaggle" 
-- Click on the button above to create a resource in SaturnCloud
-- Verify that the kaggle secret is linked in the "secrets" tab
-- Run the code and submit your predictions
-- Improve the score
-
-You can also see it as a video:
-
-
-<a href="https://www.loom.com/share/c41e5691bd36414fa4df8de9c905cc58">
-    <img src="https://user-images.githubusercontent.com/875246/206399525-097683c4-62bd-436b-815a-4ac8543502a9.png" />
-</a>
