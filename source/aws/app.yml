@@ -25,7 +25,7 @@ Resources:
       ExecutionRoleArn: !ImportValue ECSTaskExecutionRole
       ContainerDefinitions:
         - Name: !Sub '${ProjectName}-container'
-          Image: !Sub '${UserId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ProjectName}'
+          Image: !Sub '${UserId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ProjectName}-repo'
           Cpu: 1024
           Memory: 4096
           PortMappings:

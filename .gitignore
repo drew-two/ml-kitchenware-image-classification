@@ -1,8 +1,10 @@
 __pycache__/
 .vscode/
+.ipynb_checkpoints/
 checkpoints/
 kt_*/
 data/
 mlruns/
 mlruns.db
+./assets/model/
 *.h5

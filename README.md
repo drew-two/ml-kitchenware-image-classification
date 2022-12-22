@@ -1,50 +1,58 @@
-# Kitchenware Competition Image classification
+# ML for Image Classification: Kitchenware Kaggle Competition
 
-Starter notebook [keras-starter.ipynb](./keras-starter.ipynb) from [this GitHub repo](https://github.com/DataTalksClub/kitchenware-competition-starter) by Alexey Grigorev.
+This repo explores simple CNNs from Keras applications, as well as larger and more powerful deep learning models such as image transformers to classify kitchenware and cutlery. Here we see exploratory data analysis (EDA), tuning different ML models, and hyperparameter search with Keras Tuner.
+- Model is submitted to Kaggle as well as having a local and cloud deploy via [BentoML](https://www.bentoml.com/)
 
-- Using the starter notebook to learn how to load the competition data and make submissions, this repo explores other, larger and more powerful deep learning models to solve this problem.
-- CNN models include:
-    - ConvNext
-    - ConvNextV2
-    - EfficientNet
-- Image transformer models include:
-    - MaxViT
-    - DaViT
-    - BAiT
-    - CAiT
+### Dataset
 
-Models not from Keras applications come from [this](https://github.com/leondgarse/keras_cv_attention_models/tree/main/keras_cv_attention_models/beit) attention model GitHub repo by leondgarse.
-- Information on original papers also found here.
+Dataset comes from [Kitchenware Classification Kaggle competition](https://www.kaggle.com/competitions/kitchenware-classification)
 
-EVALUATION: See [Project-Evaluation.md](./Project-Evaluation.md)
+Includes of glasses, cups, plates, forks, knives and spoons.
 
-## Dataset
+### Technologies
+- Python
+- Anaconda
+- Pipenv
+- CUDA
+- Pandas, NumPy
+- Tensorflow/Keras
+    - CNN models:
+        - ConvNext
+        - ConvNextV2
+        - EfficientNet
+    - Image transformer models:
+        - MaxViT
+        - DaViT
+        - CAiT
+        - DEiT\*
+        - BEiT\**
+- BentoML
+- Docker
+- AWS ECR
+- AWS ECS
 
-Dataset comes from [Kitchenware Classification Kaggle competition](https://www.kaggle.com/competitions/kitchenware-classification).
-- Can download dataset directly or after installing [Kaggle API](https://www.kaggle.com/docs/api)
-    - You can run the commands at the beginning of the [starter notebook](./notebooks/keras-starter.ipynb), or: 
-        ```
-        kaggle competitions download -c kitchenware-classification
-        mkdir data
-        unzip kitchenware-classification.zip -d data > /dev/null
-        rm kitchenware-classification.zip
-        ```
+Starter notebook [keras-starter.ipynb](./source/notebooks/keras-starter.ipynb) from this [GitHub repo](https://github.com/DataTalksClub/kitchenware-competition-starter) for DataTalks.Club [ML Zoomcamp](https://github.com/alexeygrigorev/mlbookcamp-code).
+
+## Development Overview:
+- Setup environment with Pipenv/Anaconda
+- Setup GPU support with CUDA toolkit in WSL2 (Ubuntu)
+- [EDA](./source/notebooks/eda.ipynb)
+    - Visualize images
+    - Visualize class imbalance
+    - Visualize image sizes
+    - Hypothesis for image augmentation
+- Prepare Dataset (80/20 train/validation split)
+- Explore different models for fine-tuning
+    - Explore CNN models from Keras applications
+    - Explore larger CNN models and Image Transformer models from [GitHub repo](https://github.com/leondgarse/)
 
 ## Setup
 
-0. (Optional) GPU support:
-    - Get appropriate CUDA v11.x.x from [Nvidia](https://developer.nvidia.com/cuda-11.2.2-download-archive).
-        - (Linux) Add to your .bashrc: `echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64/' >> ~/.bashrc`  
-    - Install [cuDNN 8.1.0](https://docs.nvidia.com/deeplearning/cudnn/install-guide/index.html)
-    - NOTE: Need to install it this way rather than via Anaconda to work with Pipenv out of the box
-1. Install pipenv and pyenv (recommended):
-    - `pip install pipenv pyenv`
-    - `make setup`
-    - By default this installs the development packages. You can run `pipenv install` for just the deploy packages.
+See [Setup instructions](./SETUP.md)
 
 ## Use
 
-Refer to [Makefile](./Makefile)
+Refer to [Makefile](./Makefile). Everything you need to run will be in there
 1. Run with `make run`
     - This performs all the training and building for you. You can see the Makefile to run these separately.
 2. Testing:
@@ -64,26 +72,34 @@ NOTE: As a Tensorflow image classification model, this is pretty large (~2.5GB i
 - I can provide as URL for testing, just message me on the Slack (Andrew Katoch)
 - Otherwise, the screenshots should be sufficient.
 
-Deploy to cloud with `make publish`
+0. Install [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html) and configure it.
+1. Push image to cloud with `make publish`. This creates an AWS ECR repo and pushes to it
+2. Install [ecs-cli](https://github.com/aws/amazon-ecs-cli#installing) with `make install-ecs-cli`.
+3. Configure the ECS-cli profile with the same credentials as the AWS CLI: `./ecs-cli configure profile --access-key aws_access_key_id --secret-key aws_secret_access_key`
+4. 
 
 ## Notebooks
 
 0. EDA
-- [eda.ipynb](./notebooks/eda.ipynb)
+    - [eda.ipynb](./notebooks/eda.ipynb)
 1. Model experimentation
-- [keras-starter-deit-cait.ipynb](./notebooks/keras-starter-deit-cait.ipynb): explores the DEiT and CAiT transformer models
-- [keras-starter-efficientnet.ipynb](./notebooks/keras-starter-efficientnet.ipynb): explores EfficientNet CNN models
-- [keras-starter-maxvit.ipynb](./notebooks/keras-starter-maxvit.ipynb): explores the MaxViT transformer model
-- [keras-starter-swin.ipynb](./notebooks/keras-starter-swin.ipynb): explores the Swin Transformer model
-- [model-testing.ipynb](./notebooks/model-testing.ipynb): performs a search over some transformer and CNN models
+    - [keras-starter-deit-cait.ipynb](./notebooks/keras-starter-deit-cait.ipynb): explores the DEiT and CAiT transformer models
+    - [keras-starter-efficientnet.ipynb](./notebooks/keras-starter-efficientnet.ipynb): explores EfficientNet CNN models
+    - [keras-starter-maxvit.ipynb](./notebooks/keras-starter-maxvit.ipynb): explores the MaxViT transformer model
+    - [keras-starter-swin.ipynb](./notebooks/keras-starter-swin.ipynb): explores the Swin Transformer model
+    - [model-testing.ipynb](./notebooks/model-testing.ipynb): performs a search over some transformer and CNN models
 2. Hyperparameter Search
-- [augmentation-test.ipynb](./notebooks/augmentation-test.ipynb): explores augmentation from ImageDataGenerator. None chosen
-- [randaug-testing.ipynb](./notebooks/randaug-testing.ipynb): explores augmentation using the RandAugment auto augmentation policy. Not chosen
-- [learning-rate-test.ipynb)](./notebooks/learning-rate-test.ipynb): searches for learning rate with large search space
-- [learning-rate-final.ipynb)](./notebooks/learning-rate-final.ipynb): searches for learning rate with narrower search space
-3. Final Drafts
-- [kaggle-submission.ipynb](./notebooks/kaggle-submission.ipynb): submits trained BEiT model for Kaggle competition
-- [trainer.ipynb](./trainer.ipynb): training and bentoml capture of model for deployment (uses DEiT to save on space/time)
+    - [augmentation-test.ipynb](./notebooks/augmentation-test.ipynb): explores augmentation from ImageDataGenerator. None chosen
+    - [randaug-testing.ipynb](./notebooks/randaug-testing.ipynb): explores augmentation using the RandAugment auto augmentation policy. Not chosen
+    - [learning-rate-test.ipynb)](./notebooks/learning-rate-test.ipynb): searches for learning rate with large search space
+    - [learning-rate-final.ipynb)](./notebooks/learning-rate-final.ipynb): searches for learning rate with narrower search space
+3. Training
+    - [kaggle-submission.ipynb](./notebooks/kaggle-submission.ipynb): submits trained BEiT model for Kaggle competition
+    - [trainer.ipynb](./trainer.ipynb): training and bentoml capture of model for deployment (uses DEiT to save on space/time)
+    - [trainer.py](./trainer.py): training script made from above notebook
+4. Deploy
+    - [service.py](./service.py): BentoML service used for Docker/ECS
+    - [test_prediction.py](./testing/test_prediction.py): Script for testing service 
 
 ## Original README
 
