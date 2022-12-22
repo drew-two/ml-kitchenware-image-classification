@@ -1,0 +1,110 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Deploys Kitchenware Classification model to ECS
+
+Parameters:
+  ProjectName:
+    Description: "Name of this project"
+    Type: String
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9_-]*"
+
+  UserId:
+    Description: "User ID of user calling this template"
+    Type: String
+    AllowedPattern: "[0-9]*"
+
+Resources:
+  
+  ECSTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Cpu: 1024
+      Memory: 4096
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !ImportValue ECSTaskExecutionRole
+      ContainerDefinitions:
+        - Name: !Sub '${ProjectName}-container'
+          Image: !Sub '${UserId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ProjectName}'
+          Cpu: 1024
+          Memory: 4096
+          PortMappings:
+            - ContainerPort: 3000
+              Protocol: tcp
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub '${ProjectName}-logs'
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: !Sub '${ProjectName}-container'
+
+  ECSService:
+    Type: AWS::ECS::Service
+    DependsOn: LoadBalancerListenerRule
+    Properties:
+      ServiceName: !Sub '${ProjectName}-service'
+      TaskDefinition: !Ref ECSTaskDefinition
+      Cluster: !ImportValue 'ECSCluster'
+      LaunchType: FARGATE
+      # DeploymentConfiguration:
+      #   DeploymentCircuitBreaker:
+      #     Enable: Yes
+      #     Rollback: Yes
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets:
+            - !ImportValue Subnet1
+            - !ImportValue Subnet2
+          SecurityGroups:
+            - !ImportValue ContainerSecurityGroup
+      LoadBalancers:
+        - ContainerName: !Sub '${ProjectName}-container'
+          ContainerPort: 3000
+          TargetGroupArn: !Ref LoadBalancerTargetGroup
+
+  LoadBalancerTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub '${ProjectName}-tg'
+      VpcId: !ImportValue VPC
+      Port: 3000
+      Protocol: HTTP
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /healthz
+      HealthCheckPort: 3000
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      Matcher:
+        HttpCode: 200-299
+      TargetType: ip
+
+  LoadBalancerListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !ImportValue ELBListener
+      Priority: 1
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - /
+            - /predict_image
+      Actions:
+        - TargetGroupArn: !Ref LoadBalancerTargetGroup
+          Type: forward
+
+
+Outputs:
+
+  URL:
+    Description: Kitchenware Classification URL
+    Value: !Join ['', ['http://', !ImportValue ELBDNSName, '/']]
+    Export:
+      Name: !Sub '${ProjectName}-URL'
+
+  ApiEndpoint:
+    Description: Kitchenware Classification API Endpoint
+    Value: !Join ['', ['http://', !ImportValue ELBDNSName, '/predict_image']]
+    Export:
+      Name: !Sub '${ProjectName}-API-Endpoint'
+

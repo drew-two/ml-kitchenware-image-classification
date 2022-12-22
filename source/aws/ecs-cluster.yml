@@ -1,0 +1,133 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Deploys ECS cluster, loadbalancer, security groups and cloudwatch
+
+Parameters:
+  ProjectName:
+    Description: "Name of this project"
+    Type: String
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9_-]*"
+
+Resources:
+
+  ECSTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: [ecs-tasks.amazonaws.com]
+          Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+        - PolicyName: AmazonECSTaskExecutionRolePolicy
+          PolicyDocument:
+            Statement:
+            - Effect: Allow
+              Action:
+                - 'ecr:BatchCheckLayerAvailability'
+                - 'ecr:BatchGetImage'
+                - 'ecr:GetAuthorizationToken'
+                - 'ecr:GetDownloadUrlForLayer'
+                - 'logs:CreateLogStream'
+                - 'logs:PutLogEvents'
+              Resource: '*'
+
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub '${ProjectName}-cluster'
+
+  ElasticLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub '${ProjectName}-elb'
+      Subnets:
+        - !ImportValue 'Subnet1'
+        - !ImportValue 'Subnet2'
+      SecurityGroups:
+        - !Ref ElasticLoadBalancerSecurityGroup
+
+  ElasticLoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ElasticLoadBalancer
+      Protocol: HTTP
+      Port: 3000
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref LoadBalancerDefaultTargetGroup
+
+  ElasticLoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for elastic load balancer for ECS service
+      VpcId: !ImportValue 'VPC'
+      SecurityGroupIngress:
+        - Description: !Sub 'SG Ingress for accessing ${ProjectName} API endpoint'
+          CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          ToPort: 3000
+          FromPort: 3000
+
+  LoadBalancerDefaultTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: default
+      VpcId: !ImportValue 'VPC'
+      Protocol: 'HTTP'
+      Port: 3000
+      Tags:
+        - Key: 'Name'
+          Value: !Sub '${ProjectName}-default-tg'
+
+  CloudWatchLogsGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '${ProjectName}-logs'
+      RetentionInDays: 1
+
+  ContainerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup      
+    Properties:
+      VpcId: !ImportValue 'VPC'
+      GroupDescription: for ecs containers
+      SecurityGroupIngress:
+        - SourceSecurityGroupId: !Ref 'ElasticLoadBalancerSecurityGroup'
+          IpProtocol: tcp
+          ToPort: 3000
+          FromPort: 3000
+
+Outputs:
+  
+  ECSTaskExecutionRole:
+    Description: ECS Task Execution Role
+    Value: !GetAtt 'ECSTaskExecutionRole.Arn'
+    Export:
+      Name: 'ECSTaskExecutionRole'
+
+
+  Cluster:
+    Description: 'Project ECS Cluster'
+    Value: !Ref ECSCluster
+    Export:
+      Name: 'ECSCluster'
+
+  Listener:
+    Description: 'Load Balancer Listener'
+    Value: !Ref ElasticLoadBalancerListener
+    Export:
+      Name: 'ELBListener'
+
+  ContainerSecurityGroup:
+    Description: 'ECS container Security Group'
+    Value: !Ref ContainerSecurityGroup
+    Export:
+      Name: 'ContainerSecurityGroup'
+
+  LoadBalancerDNS:
+    Description: 'DNS for the elastic loadbalancer'
+    Value: !GetAtt ElasticLoadBalancer.DNSName
+    Export:
+      Name: 'ELBDNSName'
+
