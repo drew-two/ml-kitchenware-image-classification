@@ -53,12 +53,12 @@ Starter notebook [keras-starter.ipynb](./source/notebooks/keras-starter.ipynb) f
 
 ## Setup
 
-See [Setup instructions](./SETUP.md). Install Git LFS if pulling repo to avoid retraining model.
+See [Setup instructions](./SETUP.md). Install Git LFS before pulling repo to pull model and weights.
 
 ## Use
 
 Refer to [Makefile](./Makefile).
-0. (Optional) run `make train` to train model. **Will take very long time if GPU is not configured.**
+0. (Optional) run `make train` to train model if you did not pull use Git LFS. **Will take very long time if GPU is not configured.**
 1. Run `make run` to build BentoML Bento (Docker image and webserver/API) for model and run locally.
     - Can also run `make serve` to serve model from Python
 2. After running Bento:
