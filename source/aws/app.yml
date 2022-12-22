@@ -64,11 +64,11 @@ Resources:
     Properties:
       Name: !Sub '${ProjectName}-tg'
       VpcId: !ImportValue VPC
-      Port: 3000
+      Port: 80
       Protocol: HTTP
       HealthCheckIntervalSeconds: 10
       HealthCheckPath: /healthz
-      HealthCheckPort: 3000
+      HealthCheckPort: 80
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 5
       Matcher:
@@ -79,7 +79,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
       ListenerArn: !ImportValue ELBListener
-      Priority: 1
+      Priority: 2
       Conditions:
         - Field: path-pattern
           Values:
@@ -88,3 +88,11 @@ Resources:
       Actions:
         - TargetGroupArn: !Ref LoadBalancerTargetGroup
           Type: forward
+
+Outputs:
+
+  ApiEndpoint:
+    Description: BentoML Endpoint
+    Value: !Join ['', ['http://', !ImportValue ELBDNSName, ':3000']]
+    Export:
+      Name: 'BentoMLEndpoint'

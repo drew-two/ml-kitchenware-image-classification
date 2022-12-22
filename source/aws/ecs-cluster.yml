@@ -54,7 +54,7 @@ Resources:
     Properties:
       LoadBalancerArn: !Ref ElasticLoadBalancer
       Protocol: HTTP
-      Port: 3000
+      Port: 80
       DefaultActions:
         - Type: forward
           TargetGroupArn: !Ref LoadBalancerDefaultTargetGroup
@@ -68,8 +68,6 @@ Resources:
         - Description: !Sub 'SG Ingress for accessing ${ProjectName} API endpoint'
           CidrIp: 0.0.0.0/0
           IpProtocol: tcp
-          ToPort: 3000
-          FromPort: 3000
 
   LoadBalancerDefaultTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -77,7 +75,7 @@ Resources:
       Name: default
       VpcId: !ImportValue 'VPC'
       Protocol: 'HTTP'
-      Port: 3000
+      Port: 80
       Tags:
         - Key: 'Name'
           Value: !Sub '${ProjectName}-default-tg'
@@ -96,8 +94,6 @@ Resources:
       SecurityGroupIngress:
         - SourceSecurityGroupId: !Ref 'ElasticLoadBalancerSecurityGroup'
           IpProtocol: tcp
-          ToPort: 3000
-          FromPort: 3000
 
 Outputs:
   

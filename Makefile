@@ -36,6 +36,7 @@ test:
 repo:
 	$(eval AWS_REGION=$(shell aws configure get region))
 	$(eval AWS_USER_ID=$(shell aws sts get-caller-identity | jq -r '.UserId'))
+	@echo Creating ECR repository
 	aws ecr get-login-password --region ${AWS_REGION} \
 		| docker login \
 			--username AWS \
@@ -44,11 +45,15 @@ repo:
 	aws ecr create-repository --repository-name ${AWS_ECR_REPO}
 
 publish:
+	$(eval AWS_USER_ID=$(shell aws sts get-caller-identity | jq -r '.UserId'))
 	@echo
+	@echo Pushing image ${MODEL_NAME}:${TAG} to ${AWS_USER_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${AWS_ECR_REPO}
 	docker tag ${MODEL_NAME}:${TAG} ${AWS_USER_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${AWS_ECR_REPO}:${TAG}
 	docker push ${AWS_USER_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${AWS_ECR_REPO}:${TAG}
 
-aws: #repo publish
+aws: repo publish
+	$(eval AWS_USER_ID=$(shell aws sts get-caller-identity | jq -r '.UserId'))
+
 	@ echo 
 	@ echo Deploying stack for VPC/Subnet/Networking...
 	aws cloudformation create-stack \
@@ -57,6 +62,7 @@ aws: #repo publish
 		--stack-name ${MODEL_NAME}-vpc
 	@echo Waiting for VPC stack to complete...
 	aws cloudformation wait stack-create-complete --stack-name ${MODEL_NAME}-vpc
+
 	@echo
 	@echo Deploying stack for ECS Cluster...
 	aws cloudformation create-stack \
@@ -66,6 +72,7 @@ aws: #repo publish
 		--stack-name ${AWS_CLUSTER_NAME}
 	@echo Waiting for ECS Cluster stack to complete...
 	aws cloudformation wait stack-create-complete --stack-name ${AWS_CLUSTER_NAME}
+
 	@echo
 	@echo Deploying stack for task definition to ECS cluster
 	aws cloudformation create-stack \
@@ -75,16 +82,17 @@ aws: #repo publish
 		--stack-name ${MODEL_NAME}-ecs-task-definition
 	@echo Waiting for ECS Task Definition stack to complete...
 	aws cloudformation wait stack-create-complete --stack-name ${MODEL_NAME}-ecs-task-definition
+
 	@echo Deploy complete.
 
 down:
 	@echo
 	@echo "Deleting ECS Task Definition."
 	aws cloudformation delete-stack --stack-name ${MODEL_NAME}-ecs-task-definition
+	aws cloudformation wait stack-delete-complete --stack-name ${MODEL_NAME}-ecs-task-definition
 	@echo "Waiting for delete confirmation..."
 	@echo "Deleted."
 
-	aws cloudformation wait stack-delete-complete --stack-name ${MODEL_NAME}-ecs-task-definition
 	@echo "Deleting ECS Cluster."
 	aws cloudformation delete-stack --stack-name ${AWS_CLUSTER_NAME}
 	@echo "Waiting for delete confirmation..."
@@ -95,7 +103,8 @@ down:
 	aws cloudformation delete-stack --stack-name ${MODEL_NAME}-vpc
 	@echo "Waiting for delete confirmation..."
 	aws cloudformation wait stack-delete-complete --stack-name ${MODEL_NAME}-vpc
-	echo "All deploys deleted"
+
+	@echo "All deploys deleted"
 	
 ## Setup and cleanup
 clean:

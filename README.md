@@ -82,8 +82,8 @@ See [Walkthrough](./WALKTHROUGH.md) to see screenshots and step-by-step.
 
 Must be done after building Bento. This pulls from your AWS **default** profile. Can adjust settings in [Makefile](./Makefile).
 
-Run `make aws` to make ECR repo, push BentoML Docker image, and create ECS cluster and service with cloudformation.
-- Steps this takes:
+Run `make aws` to make ECR repo, push Docker image, create ECS cluster and service with cloudformation. May take 10 minutes.
+- What this does:
     1. Creates AWS ECR repo in your local AWS region (`make repo`)
     2. Publishes docker image to ECR repo by tagging local Bento image and pushing
     3. Deploys 3 AWS Cloudformation stacks:
@@ -120,7 +120,7 @@ Run `make aws` to make ECR repo, push BentoML Docker image, and create ECS clust
             - Upload the file `testing/0966.jpg` or any other file from the dataset.
             - Hit `Execute`, wait for your result
     10. Hit `Stop` in the top right to bring down model. 
-- To delete all AWS deploys, run `aws down`.
+- To delete all AWS deploys, run `aws down`. May take 10 minutes.
 
 ## Code
 
