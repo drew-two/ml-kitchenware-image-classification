@@ -90,7 +90,7 @@ Run `make aws` to make ECR repo, push Docker image, create ECS cluster and servi
         - Creates VPC and networking
         - Creates ECS Cluster and service
         - Creates ECS task definition to be run
-- Unfortunately, we have to run the ECS task to start up the ML service, as this not yet possible from Cloudformation.
+- Unfortunately, I could not figure this out in time, so this step is manual. The Walkthrough shows this with pictures.
     1. Navigate to the [AWS console](https://aws.amazon.com/)
     2. Navigate to AWS ECS from the top bar.
     3. Click on Amazon ECS > **Task Definitions** on the left navigation bar.
