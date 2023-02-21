@@ -1,5 +1,7 @@
 # ML for Image Classification: Kitchenware Kaggle Competition
 
+![Kitchenware](https://storage.googleapis.com/kaggle-competitions/kaggle/42532/logos/header.png)
+
 This repo explores simple CNNs from Keras applications, as well as larger and more powerful deep learning models such as image transformers to classify kitchenware and cutlery. Here we see exploratory data analysis (EDA), tuning different ML models, and hyperparameter search with Keras Tuner.
 - Model is submitted to Kaggle as well as having a local and cloud deploy via [BentoML](https://www.bentoml.com/)
 
