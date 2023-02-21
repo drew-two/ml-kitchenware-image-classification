@@ -86,6 +86,8 @@ aws: repo publish
 	@echo Deploy complete.
 
 down:
+	$(eval AWS_USER_ID=$(shell aws sts get-caller-identity | jq -r '.UserId'))
+
 	@echo
 	@echo "Deleting ECS Task Definition."
 	aws cloudformation delete-stack --stack-name ${MODEL_NAME}-ecs-task-definition
@@ -103,6 +105,14 @@ down:
 	aws cloudformation delete-stack --stack-name ${MODEL_NAME}-vpc
 	@echo "Waiting for delete confirmation..."
 	aws cloudformation wait stack-delete-complete --stack-name ${MODEL_NAME}-vpc
+
+	aws ecr get-login-password --region ${AWS_REGION} \
+		| docker login \
+			--username AWS \
+			--password-stdin \
+			${AWS_USER_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+	aws ecr delete-repository --force --repository-name ${AWS_ECR_REPO}
+
 
 	@echo "All deploys deleted"
 	
